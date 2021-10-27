@@ -58,7 +58,7 @@ const Register = () => {
           <CardHolder>
             <Image src={image} />
             <HoldLabel>
-              <Input type="file" id="up" />
+              <Input type="file" id="up" onChange={uploadImage} />
             </HoldLabel>
             <Label htmlFor="up">Upload Image</Label>
             <Input placeholder="Enter Hotel Name" />
@@ -78,7 +78,7 @@ const Register = () => {
           <CardHolder>
             <Image src={image} />
             <HoldLabel>
-              <Input type="file" id="up" />
+              <Input type="file" id="up" onChange={uploadImage} />
             </HoldLabel>
             <Label htmlFor="up">Upload Room Image</Label>
             <Input placeholder="Enter Room Number" />

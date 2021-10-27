@@ -4,14 +4,20 @@ import img1 from "./2.png";
 import { Button, Input } from "antd";
 import { app } from "../base";
 import firebase from "firebase";
+import { useHistory } from "react-router-dom";
 
 const SignPage = () => {
+  const history = useHistory();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [image, setImage] = useState(img1);
   const [avatar, setAvatar] = useState("");
   const [percent, setPercent] = useState(0);
+  const [show, setShow] = useState(true);
+  const toggle = () => {
+    setShow(!show);
+  };
 
   const uploadImage = async (e) => {
     const file = e.target.files[0];
@@ -38,46 +44,115 @@ const SignPage = () => {
       }
     );
   };
+
+  const signUp = async () => {
+    const saveUser = await app
+      .auth()
+      .createUserWithEmailAndPassword(email, password);
+
+    if (saveUser) {
+      await app.firestore().collection("allUser").doc(saveUser.user.uid).set({
+        avatar,
+        name,
+        email,
+        password,
+        createdBy: saveUser.user.uid,
+      });
+      history.push("/register");
+    }
+  };
+
+  const GoogleSignIn = async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const saveUser = await app.auth().signInWithPopup(provider);
+
+    if (saveUser) {
+      await app.firestore().collection("users").doc(saveUser.user.uid).set({
+        avatar: saveUser.user.photoURL,
+        name: saveUser.user.displayName,
+        email: saveUser.user.email,
+        password,
+        createdBy: saveUser.user.uid,
+      });
+      history.push("/");
+    }
+  };
+
+  const Login = async () => {
+    const saveUser = await app
+      .auth()
+      .signInWithEmailAndPassword(email, password);
+
+    history.push("/");
+  };
+
   return (
     <Container>
-      <Wrapper>
-        <CardHolder>
-          <HoldLabel>
-            <Input type="file" id="up" onChange={uploadImage} />
-          </HoldLabel>
-          <Label htmlFor="up">Upload Image</Label>
-          <Input
-            placeholder="Enter your Name"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-          />
-          <Input
-            placeholder="Enter your Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-            }}
-          />
-          <Input
-            placeholder="Enter your Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-          />
-          <Button>Sign Up</Button>
-          <div>Or</div>
-          <Button style={{ backgroundColor: "red" }}>
-            Sign Up With Google
-          </Button>
-          <Text>
-            Already have an account? <div>Log in</div>
-          </Text>
-        </CardHolder>
-        <Image src={image} />
-      </Wrapper>
+      {show ? (
+        <Wrapper>
+          <CardHolder>
+            <HoldLabel>
+              <Input type="file" id="up" onChange={uploadImage} />
+            </HoldLabel>
+            <Label htmlFor="up">Upload Image</Label>
+            <Input
+              placeholder="Enter your Name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
+            />
+            <Input
+              placeholder="Enter your Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+            />
+            <Input
+              placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+            <Button onClick={signUp}>Sign Up</Button>
+            <div>Or</div>
+            <Button onClick={GoogleSignIn} style={{ backgroundColor: "red" }}>
+              Sign Up With Google
+            </Button>
+            <Text>
+              Already have an account? <div onClick={toggle}>Log in</div>
+            </Text>
+          </CardHolder>
+          <Image src={image} />
+        </Wrapper>
+      ) : (
+        <Wrapper>
+          <CardHolder>
+            <Input
+              placeholder="Enter your Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+            />
+            <Input
+              placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+            <Button onClick={signUp}>Log In</Button>
+
+            <Text>
+              Don't have an account? <div onClick={toggle}>Sign Up</div>
+            </Text>
+          </CardHolder>
+          {/* <h1>Login</h1> */}
+        </Wrapper>
+      )}
     </Container>
   );
 };
